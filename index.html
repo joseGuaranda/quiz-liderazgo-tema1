@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz · Liderazgo, Tema 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3F8; --surface:#FFFFFF; --ink:#1D2B4F; --muted:#5B6B84; --line:#D3DDE9;
+  --ok:#2F7D5B; --ok-bg:#E3F2EA; --bad:#C2392F; --bad-bg:#FBE7E5; --accent:#1D2B4F;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121A2E; --surface:#1B2540; --ink:#E7ECF5; --muted:#9AA8C0; --line:#2E3A58;
+    --ok:#6CC79C; --ok-bg:#183A2C; --bad:#F08A80; --bad-bg:#43201E; --accent:#E7ECF5;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121A2E; --surface:#1B2540; --ink:#E7ECF5; --muted:#9AA8C0; --line:#2E3A58;
+  --ok:#6CC79C; --ok-bg:#183A2C; --bad:#F08A80; --bad-bg:#43201E; --accent:#E7ECF5;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:1.0625rem;line-height:1.55}
+main{max-width:38rem;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+h1{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",sans-serif;font-weight:800;font-size:clamp(1.75rem,6vw,2.4rem);line-height:1.1;margin:.5rem 0 .4rem;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 1.5rem}
+.track{display:flex;gap:6px;margin-bottom:1.25rem}
+.track span{flex:1;height:6px;border-radius:3px;background:var(--line);transition:background .25s}
+.track span.ok{background:var(--ok)}
+.track span.bad{background:var(--bad)}
+.track span.now{background:var(--muted)}
+.count{font-size:.9rem;color:var(--muted);margin:0 0 .35rem}
+.q{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",sans-serif;font-weight:600;font-size:1.3rem;line-height:1.3;margin:0 0 1.1rem}
+.opts{display:grid;gap:.6rem}
+.opt{appearance:none;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:.85rem 1rem;cursor:pointer;transition:border-color .15s}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt:focus-visible,.btn:focus-visible{outline:3px solid var(--muted);outline-offset:2px}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.why{margin-top:1rem;padding:.9rem 1rem;border-left:4px solid var(--ok);background:var(--surface);border-radius:0 10px 10px 0}
+.why.badw{border-left-color:var(--bad)}
+.why strong{display:block;margin-bottom:.2rem}
+.btn{appearance:none;font:inherit;font-weight:700;margin-top:1.25rem;width:100%;padding:.9rem 1rem;border-radius:12px;border:none;background:var(--accent);color:var(--bg);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);margin-top:.6rem}
+.score{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:4rem;line-height:1;margin:.5rem 0}
+.review{margin-top:1.5rem;display:grid;gap:.75rem}
+.review div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem}
+.review p{margin:.2rem 0}
+.review .ans{color:var(--ok);font-weight:700}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>¿Hay algún líder en la sala?</h1>
+  <p class="sub">Certificado en Liderazgo · Tema 1. Elige una respuesta y revisa la explicación.</p>
+  <div class="track" id="track"></div>
+  <div id="app"></div>
+</main>
+<script>
+const Q=[
+ {q:"Según Kotter, ¿qué maneja la gestión y qué maneja el liderazgo?",o:["La gestión maneja el cambio y el liderazgo la complejidad","La gestión maneja la complejidad y el liderazgo el cambio","Ambos manejan lo mismo","La gestión maneja personas y el liderazgo recursos"],a:1,e:"La gestión trae orden y predictibilidad (complejidad); el liderazgo anticipa el cambio y lleva a la organización hacia él."},
+ {q:"En la idea de «qué» vs. «por qué», ¿a qué corresponde el liderazgo?",o:["Al «qué»: organizar y planificar","Al «por qué»: sentido, visión y motivación","Al «cómo»: procesos y control","Al «cuándo»: plazos"],a:1,e:"La gestión se encarga del «qué»; el liderazgo, del «por qué». Azincourt necesitó las dos."},
+ {q:"Según Prentice (1961), ¿qué condición es indispensable para ser líder?",o:["Tener un cargo formal","Tener seguidores","Ser carismático","Tener experiencia técnica"],a:1,e:"Liderazgo es lograr una meta dirigiendo a otros: sin seguidores no hay líder. Puede ser formal o informal."},
+ {q:"¿En qué orden aparecieron los enfoques para estudiar el liderazgo?",o:["Contexto → conducta → rasgos","Conducta → rasgos → contexto","Rasgos → conducta → contexto","Rasgos → contexto → conducta"],a:2,e:"Primero lo que el líder es (rasgos), luego lo que hace (conducta) y después dónde lo hace (contexto)."},
+ {q:"Según el curso, ¿el liderazgo es innato?",o:["Sí, como decía Drucker","Sí, depende de la inteligencia","No: no hay rasgos universales y las actitudes se cultivan","Solo en líderes formales"],a:2,e:"La idea de Drucker de que no se puede enseñar está superada."},
+ {q:"¿Cuál NO es uno de los 4 rasgos del líder efectivo de Sorcher y Brant?",o:["Independencia","Baja necesidad de control","Extroversión carismática","Pensamiento conceptual"],a:2,e:"Los 4 son independencia, baja necesidad de control, pensamiento conceptual y confianza en sí mismo. No necesita ser extrovertido."},
+ {q:"¿Cuáles son los 5 componentes de la inteligencia emocional de Goleman?",o:["Autoconciencia, autorregulación, motivación, empatía y habilidades sociales","Inteligencia, carisma, empatía, control y visión","Motivación, disciplina, liderazgo, empatía y CI","Autoestima, autocontrol, simpatía, carisma y persuasión"],a:0,e:"Van de adentro hacia afuera: tres sobre uno mismo y dos sobre la relación con los demás."},
+ {q:"¿Qué concluyeron los estudios de Michigan y Ohio State?",o:["La orientación a tareas es mejor","La orientación a personas es mejor","Ninguna de las dos fue mejor que la otra","Hay que evitar ambas"],a:2,e:"Distinguieron conductas orientadas a personas y a tareas, sin encontrar una superior."},
+ {q:"¿Qué afirma el modelo de contingencia de Fiedler?",o:["Que el líder nace","Que la situación es más favorable con buenas relaciones, tareas claras y autoridad sobre incentivos","Que siempre hay que delegar","Que el estilo depende del tipo de decisión"],a:1,e:"Esas 3 condiciones sirven de diagnóstico. El tipo de decisión es de Vroom y Yetton."},
+ {q:"¿Cuáles son los 3 estilos de liderazgo de Kurt Lewin?",o:["Transaccional, transformacional y ético","Autocrático, democrático y laissez faire","Dirigir, apoyar y delegar","Formal, informal y situacional"],a:1,e:"El autocrático «dice», el democrático «pregunta» y el laissez faire «deja hacer»."},
+ {q:"¿Qué es cierto del estilo democrático?",o:["Siempre se necesita consenso","El grupo decide por votación","El líder escucha los aportes y es quien toma la decisión final","El líder no participa"],a:2,e:"No hace falta consenso. Si decide distinto a lo propuesto sin explicar, puede bajar la moral."},
+ {q:"¿Cuándo funciona mejor el estilo autocrático?",o:["Equipo experto en trabajo creativo","Equipo sin experiencia y decisiones urgentes","Cuando se busca máxima creatividad","Cuando no hay prisa"],a:1,e:"Da dirección clara y rapidez. Ojo: autocrático no es autoritario ni abusivo."},
+ {q:"¿Qué es la «responsabilidad difusa»?",o:["Una ventaja del autocrático","Un riesgo del laissez faire: no queda claro de quién era cada tarea","Una característica del líder ético","Un componente de la inteligencia emocional"],a:1,e:"Junto con roles poco claros y percepción de lejanía del líder, es un peligro del laissez faire."},
+ {q:"En Hersey y Blanchard, un colaborador con competencia alta pero compromiso bajo (D3) necesita…",o:["Dirección","Coaching","Apoyo / participativo","Delegar"],a:2,e:"Poca dirección y mucho apoyo, para que se sienta parte del proceso. Se parece al democrático."},
+ {q:"Un recién llegado con pocas habilidades pero muchas ganas (D1) necesita…",o:["Delegar","Dirección","Apoyo","Que lo dejen solo"],a:1,e:"Dirección alta y apoyo bajo: quiere aprender y agradece que le digan qué hacer."},
+ {q:"¿Qué enseña el caso del capitán Marquet y el USS Santa Fe?",o:["Que la disciplina estricta mejora resultados","Que empoderar a la tripulación la convirtió en líderes y en el mejor submarino","Que hay que estudiar más la técnica","Que el líder debe dar todas las órdenes"],a:1,e:"Pasó de «porque usted me lo ordenó» a que cada uno dijera qué pensaba hacer. Es liderazgo transformacional."},
+ {q:"¿Qué diferencia al líder transformacional del transaccional?",o:["El transformacional usa más recompensas","El transaccional inspira con visión","El transformacional genera motivación interna con una visión; el transaccional intercambia esfuerzo por incentivos","No hay diferencia"],a:2,e:"El transformacional logra que la gente haga suya la visión y decida bien sin depender de él."},
+ {q:"¿Cuál es una característica del líder ético?",o:["Premia a sus favoritos para motivar","Descarga su estrés para no acumularlo","Lidera con el ejemplo y mantiene sus principios aunque se adapte al cambio","Evita los conflictos del equipo"],a:2,e:"Las 5: ejemplo, principios fijos, respeto sin favoritismos, manejo del estrés y conflictos resueltos con justicia."}
+];
+let i=0,res=[];
+const app=document.getElementById('app'),track=document.getElementById('track');
+function drawTrack(){track.innerHTML=Q.map((_,k)=>`<span class="${res[k]===true?'ok':res[k]===false?'bad':k===i?'now':''}"></span>`).join('')}
+function show(){
+  drawTrack();
+  const it=Q[i];
+  app.innerHTML=`<p class="count">Pregunta ${i+1} de ${Q.length}</p><p class="q">${it.q}</p><div class="opts">${it.o.map((t,k)=>`<button class="opt" data-k="${k}">${t}</button>`).join('')}</div><div id="fb"></div>`;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>pick(+b.dataset.k));
+  app.querySelector('.opt').focus({preventScroll:true});
+}
+function pick(k){
+  const it=Q[i],ok=k===it.a;res[i]=ok;
+  app.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(j===it.a)b.classList.add('right');else if(j===k)b.classList.add('wrong')});
+  const last=i===Q.length-1;
+  document.getElementById('fb').innerHTML=`<div class="why ${ok?'':'badw'}"><strong>${ok?'Correcto':'No es esa'}</strong>${it.e}</div><button class="btn" id="next">${last?'Ver resultado':'Siguiente pregunta'}</button>`;
+  drawTrack();
+  const n=document.getElementById('next');n.focus({preventScroll:true});
+  n.onclick=()=>{if(last)end();else{i++;show()}};
+}
+function end(){
+  drawTrack();
+  const good=res.filter(Boolean).length,bad=Q.map((q,k)=>[q,k]).filter(([,k])=>!res[k]);
+  const msg=good===Q.length?'Perfecto, dominas el tema.':good>=Q.length*0.7?'Muy bien. Repasa las que fallaste.':'Vale la pena darle otra leída al tema en Notion.';
+  app.innerHTML=`<p class="count">Tu resultado</p><p class="score">${good}/${Q.length}</p><p>${msg}</p>${bad.length?`<div class="review">${bad.map(([q])=>`<div><p>${q.q}</p><p class="ans">${q.o[q.a]}</p></div>`).join('')}</div>`:''}<button class="btn" id="again">Repetir el quiz</button>`;
+  document.getElementById('again').onclick=()=>{i=0;res=[];show()};
+}
+show();
+</script>
+</body>
+</html>
